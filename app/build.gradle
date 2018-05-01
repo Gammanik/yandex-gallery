@@ -24,7 +24,7 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation"org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
     implementation 'com.android.support:appcompat-v7:26.1.0'
     implementation 'com.android.support.constraint:constraint-layout:1.1.0'
     testImplementation 'junit:junit:4.12'
@@ -44,11 +44,14 @@ dependencies {
     implementation "com.squareup.okhttp3:okhttp:$okhttpVersion"
     implementation "com.squareup.okhttp3:logging-interceptor:$okhttpVersion"
 
-    implementation ("com.squareup.retrofit2:retrofit:$retrofitVersion"){
-            // exclude Retrofit’s OkHttp peer-dependency module and define your own module import
-                    exclude module: 'okhttp'
+    implementation("com.squareup.retrofit2:retrofit:$retrofitVersion") {
+        // exclude Retrofit’s OkHttp peer-dependency module and define your own module import
+        exclude module: 'okhttp'
     }
-    implementation "com.squareup.retrofit2:converter-gson:$retrofitVersion"
+    implementation "com.squareup.retrofit2:converter-gson:$retrofitVersion" //todo: change to Moshi?
+    implementation "com.squareup.retrofit2:adapter-rxjava2:$retrofitVersion"
+    implementation "io.reactivex.rxjava2:rxandroid:2.0.1"
+
 
     //not sure if I'll use it
     implementation "com.yandex.android:disk-restapi-sdk:1.0"
