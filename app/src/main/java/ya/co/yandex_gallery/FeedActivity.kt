@@ -1,12 +1,10 @@
 package ya.co.yandex_gallery
 
-import android.content.Context
-import android.media.Image
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.preference.PreferenceManager
 import android.util.Log
 import android.widget.Button
+import android.widget.GridView
 import butterknife.BindView
 import butterknife.ButterKnife
 import butterknife.OnClick
@@ -20,22 +18,29 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import ya.co.yandex_gallery.data.YandexDiskApi
+import ya.co.yandex_gallery.model.ImagesResponse
 
 
 class FeedActivity : AppCompatActivity() {
 
     private val TAG = "FeedActivity"
     @BindView(R.id.button_load) lateinit var loginButton: Button
+    @BindView(R.id.grid_images) lateinit var imagesGrid: GridView
+
+    private lateinit var adapter: ImageFeedAdapter
 
     @OnClick(R.id.button_load)
     fun OnLoad() {
         Log.d(TAG, "click!")
+
         val retrofit: YandexDiskApi? = getRetrofit().create(YandexDiskApi::class.java)
-        retrofit!!.getImages(10, "image")
+        retrofit!!.getImages(4, "image")
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe( {
-                    images -> Log.d(TAG, "got images!!: $images")
+                    imagesResponse: ImagesResponse -> Log.d(TAG, "got images!!: $imagesResponse")
+                    val images = imagesResponse.items
+                    adapter.addImages(images)
                 }, {
                     throwable: Throwable? ->
                     throwable?.printStackTrace()
@@ -47,8 +52,8 @@ class FeedActivity : AppCompatActivity() {
         setContentView(R.layout.activity_feed)
         ButterKnife.bind(this)
 
-        
-//        Log.d(TAG, "token: ${getToken()}")
+        adapter = ImageFeedAdapter(this)
+        imagesGrid.adapter = adapter
     }
 
 
@@ -67,7 +72,6 @@ class FeedActivity : AppCompatActivity() {
         //todo: add offlineCacheControlInterceptor() &&  .cache(httpCache)
         return OkHttpClient.Builder()
                 .addInterceptor(YandexApiInterceptor())
-
                 .build()
     }
 
