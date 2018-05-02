@@ -34,11 +34,12 @@ class FeedActivity : AppCompatActivity() {
         Log.d(TAG, "click!")
 
         val retrofit: YandexDiskApi? = getRetrofit().create(YandexDiskApi::class.java)
-        retrofit!!.getImages(4, "image")
+        retrofit!!.getImages(20, "image")
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe( {
-                    imagesResponse: ImagesResponse -> Log.d(TAG, "got images!!: $imagesResponse")
+                    imagesResponse: ImagesResponse -> Log.d(TAG, "got images!!: " +
+                        "${imagesResponse.items.map { image -> image.name }}")
                     val images = imagesResponse.items
                     adapter.addImages(images)
                 }, {
@@ -54,6 +55,8 @@ class FeedActivity : AppCompatActivity() {
 
         adapter = ImageFeedAdapter(this)
         imagesGrid.adapter = adapter
+
+//        imagesGrid.setOnClickListener()
     }
 
 
@@ -88,4 +91,9 @@ class FeedActivity : AppCompatActivity() {
         }
 
     }
+}
+
+private fun GridView.setOnClickListener() {
+    Log.d("CridView", "grid clicked")
+    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
 }
