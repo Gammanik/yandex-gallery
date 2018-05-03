@@ -1,5 +1,6 @@
 package ya.co.yandex_gallery
 
+import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -45,6 +46,11 @@ class FeedActivity : AppCompatActivity() {
                 }, {
                     throwable: Throwable? ->
                     throwable?.printStackTrace()
+//
+                    //todo: go to authorization activity in case we're not authorized
+//                    if(throwable.code() as HttpException == 401) {
+//                    val intent = Intent(this, LoginActivity::class.java)
+//                    startActivity(intent) }
                 })
     }
 
