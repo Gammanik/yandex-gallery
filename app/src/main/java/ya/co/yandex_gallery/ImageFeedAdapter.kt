@@ -20,6 +20,11 @@ class ImageFeedAdapter (private val mContext: Context) : BaseAdapter() {
         notifyDataSetChanged()
     }
 
+    fun clearImages() {
+        imagesList.clear()
+        notifyDataSetChanged()
+    }
+
     override fun getCount(): Int = imagesList.size
 
     override fun getItem(position: Int): Image = imagesList[position]
@@ -34,7 +39,6 @@ class ImageFeedAdapter (private val mContext: Context) : BaseAdapter() {
         var holder: ViewHolder
 
         // LayoutInflater to call external grid_element.xml file
-
         if (convertView == null) {
             // if it's not recycled, initialize some attributes
             val inflater = mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater

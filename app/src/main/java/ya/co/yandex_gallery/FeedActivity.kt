@@ -1,14 +1,12 @@
 package ya.co.yandex_gallery
 
-import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.support.v4.widget.SwipeRefreshLayout
 import android.util.Log
-import android.widget.Button
 import android.widget.GridView
 import butterknife.BindView
 import butterknife.ButterKnife
-import butterknife.OnClick
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import okhttp3.Interceptor
@@ -20,39 +18,16 @@ import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import ya.co.yandex_gallery.data.YandexDiskApi
 import ya.co.yandex_gallery.model.ImagesResponse
+import java.util.concurrent.TimeUnit
 
 
 class FeedActivity : AppCompatActivity() {
 
     private val TAG = "FeedActivity"
-    @BindView(R.id.button_load) lateinit var loginButton: Button
     @BindView(R.id.grid_images) lateinit var imagesGrid: GridView
+    @BindView(R.id.swipeRefreshFeed) lateinit var swipeRefreshLayout: SwipeRefreshLayout
 
     private lateinit var adapter: ImageFeedAdapter
-
-    @OnClick(R.id.button_load)
-    fun OnLoad() {
-        Log.d(TAG, "click!")
-
-        val retrofit: YandexDiskApi? = getRetrofit().create(YandexDiskApi::class.java)
-        retrofit!!.getImages(20, "image")
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe( {
-                    imagesResponse: ImagesResponse -> Log.d(TAG, "got images!!: " +
-                        "${imagesResponse.items.map { image -> image.name }}")
-                    val images = imagesResponse.items
-                    adapter.addImages(images)
-                }, {
-                    throwable: Throwable? ->
-                    throwable?.printStackTrace()
-//
-                    //todo: go to authorization activity in case we're not authorized
-//                    if(throwable.code() as HttpException == 401) {
-//                    val intent = Intent(this, LoginActivity::class.java)
-//                    startActivity(intent) }
-                })
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,7 +37,49 @@ class FeedActivity : AppCompatActivity() {
         adapter = ImageFeedAdapter(this)
         imagesGrid.adapter = adapter
 
-//        imagesGrid.setOnClickListener()
+        showProgressBar()
+        loadImages()
+
+        swipeRefreshLayout.setOnRefreshListener {
+            adapter.clearImages()
+            loadImages()
+        }
+
+    }
+
+    private fun showProgressBar() {
+        swipeRefreshLayout.isRefreshing = true
+    }
+
+    private fun hideProgressBar() {
+        swipeRefreshLayout.isRefreshing = false
+    }
+
+
+    //todo: loadImages(offset: Int)
+    fun loadImages() {
+        val retrofit: YandexDiskApi = getRetrofit().create(YandexDiskApi::class.java)
+        retrofit.getImages(40, "image")
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe( {
+                    imagesResponse: ImagesResponse -> Log.d(TAG, "got images!!: " +
+                        "${imagesResponse.items.map { image -> image.name }}")
+
+                    val images = imagesResponse.items
+                    hideProgressBar()
+                    adapter.addImages(images)
+                }, {
+                    throwable: Throwable? ->
+                    throwable?.printStackTrace()
+
+                    //todo: go to authorization activity in case we're not authorized
+//                    rxjava throwable get code
+//                    if(throwable.code() as HttpException == 401) {
+//                    val intent = Intent(this, LoginActivity::class.java)
+//                    startActivity(intent)
+//                }
+                })
     }
 
 
@@ -77,9 +94,10 @@ class FeedActivity : AppCompatActivity() {
     }
 
     fun getOkHttpClient(): OkHttpClient {
-
         //todo: add offlineCacheControlInterceptor() &&  .cache(httpCache)
         return OkHttpClient.Builder()
+                .connectTimeout(10, TimeUnit.SECONDS)
+                .readTimeout(10, TimeUnit.SECONDS)
                 .addInterceptor(YandexApiInterceptor())
                 .build()
     }
