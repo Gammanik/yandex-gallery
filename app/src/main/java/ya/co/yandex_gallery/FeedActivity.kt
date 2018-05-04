@@ -58,10 +58,7 @@ class FeedActivity : AppCompatActivity() {
 
         imagesGrid.setOnScrollListener(object: AbsListView.OnScrollListener {
             override fun onScroll(view: AbsListView?, firstVisibleItem: Int, visibleItemCount: Int, totalItemCount: Int) {
-                Log.d(TAG, "onScroll $firstVisibleItem")
-
                 if (totalItemCount - visibleItemCount <= firstVisibleItem && adapter.count + ITEMS_PER_PAGE <= MAX_ITEM_COUNT) {
-                    //TODO: Add footer or some progress view to show that items are loading
                     showProgressBar()
                     currentOffset += ITEMS_PER_PAGE
                     loadImages(currentOffset)
@@ -82,7 +79,6 @@ class FeedActivity : AppCompatActivity() {
     }
 
 
-    //todo: loadImages(offset: Int)
     fun loadImages(offset: Int) {
         val retrofit: YandexDiskApi = getRetrofit().create(YandexDiskApi::class.java)
         retrofit.getImages(ITEMS_PER_PAGE, offset)
@@ -91,9 +87,12 @@ class FeedActivity : AppCompatActivity() {
                 .subscribe( {
                     imagesResponse: ImagesResponse -> Log.d(TAG, "got images!!: " +
                         "${imagesResponse.items.map { image -> image.name }}")
+                    //because there is no "total" in the images response I have to do such a @hack
+                    if(imagesResponse.items.size < ITEMS_PER_PAGE) {
+                        //to prevent sending useless requests when the end of the list is reached
+                        MAX_ITEM_COUNT = adapter.count
 
-                    Log.d(TAG, "total items: ${imagesResponse.total}")
-                    //MAX_ITEM_COUNT = imagesResponse.total.toInt() -- no "total" field in return :(((
+                    }
                     val images = imagesResponse.items
                     hideProgressBar()
                     adapter.addImages(images)
