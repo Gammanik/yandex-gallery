@@ -21,11 +21,18 @@ class AppConstants {
         @JvmStatic
         val AUTH_URL = "https://oauth.yandex.ru/authorize?response_type=token&client_id=$CLIENT_ID&redirect_uri=$REDIRECT_URL"
 
-        @JvmStatic
-        val TOKEN_KEY = "ACCESS_TOKEN_KEY"
+        @JvmStatic //for preference manager
+        val KEY_TOKEN = "ACCESS_TOKEN_KEY"
+
+        @JvmStatic //intent.putExtra
+        val KEY_IMAGE_URL = "IMAGE_DOWNLOAD_URL_KEY"
+
+        @JvmStatic //intent.putExtra
+        val KEY_IMAGE_NAME = "IMAGE_DOWNLOAD_NAME_KEY"
+
 
         @JvmStatic
-        var ACCESS_TOKEN = ""
+        private var ACCESS_TOKEN = ""
 
         @JvmStatic
         fun getAccessToken(): String {
@@ -33,7 +40,7 @@ class AppConstants {
                 return ACCESS_TOKEN
             } else {
                 val prefs = PreferenceManager.getDefaultSharedPreferences(MyApplication.appContext)
-                val token = prefs.getString(AppConstants.TOKEN_KEY, "")
+                val token = prefs.getString(AppConstants.KEY_TOKEN, "")
                 AppConstants.ACCESS_TOKEN = token
                 return token
             }

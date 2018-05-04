@@ -1,10 +1,12 @@
 package ya.co.yandex_gallery
 
+import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v4.widget.SwipeRefreshLayout
 import android.util.Log
 import android.widget.AbsListView
+import android.widget.AdapterView
 import android.widget.GridView
 import butterknife.BindView
 import butterknife.ButterKnife
@@ -18,6 +20,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import ya.co.yandex_gallery.data.YandexDiskApi
+import ya.co.yandex_gallery.model.Image
 import ya.co.yandex_gallery.model.ImagesResponse
 import java.util.concurrent.TimeUnit
 
@@ -68,6 +71,17 @@ class FeedActivity : AppCompatActivity() {
             override fun onScrollStateChanged(view: AbsListView?, state: Int) {}
         })
 
+        //this code is better to be here than inside the adapter I guess
+        imagesGrid.onItemClickListener = AdapterView.OnItemClickListener { parent, view, itemPosition, id ->
+            Log.d(TAG, "gridClick ${adapter.getItem(itemPosition)}")
+
+            val image: Image = adapter.getItem(itemPosition)
+
+            val intent = Intent(MyApplication.appContext, PhotoDetailsActivity::class.java)
+            intent.putExtra(AppConstants.KEY_IMAGE_URL, image.file)
+            intent.putExtra(AppConstants.KEY_IMAGE_NAME, image.name)
+            MyApplication.appContext?.startActivity(intent)
+        }
     }
 
     private fun showProgressBar() {
@@ -142,9 +156,4 @@ class FeedActivity : AppCompatActivity() {
         }
 
     }
-}
-
-private fun GridView.setOnClickListener() {
-    Log.d("CridView", "grid clicked")
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
 }

@@ -62,7 +62,7 @@ class LoginActivity : AppCompatActivity() {
 
     private fun saveToken(accessToken: String) {
         val editor = PreferenceManager.getDefaultSharedPreferences(this).edit()
-        editor.putString(AppConstants.TOKEN_KEY, accessToken)
+        editor.putString(AppConstants.KEY_TOKEN, accessToken)
         editor.apply()
     }
 }
