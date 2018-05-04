@@ -6,9 +6,12 @@ import retrofit2.http.Query
 import ya.co.yandex_gallery.model.ImagesResponse
 
 
-public interface YandexDiskApi {
+interface YandexDiskApi {
 
-    @GET("resources/last-uploaded")
+    //todo: add @Header("Authorization") String token -- to make code more explicit?
+    @GET("resources/files")
     fun getImages(@Query("limit") limit: Int,
-                  @Query("media_type") mediaType: String): Single<ImagesResponse>
+                  @Query("offset") offset: Int,
+                  @Query("media_type") mediaType: String = "image",
+                  @Query("preview_size") previewSize: String = "L"): Single<ImagesResponse>
 }

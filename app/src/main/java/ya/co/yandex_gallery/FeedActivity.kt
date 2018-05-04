@@ -4,6 +4,7 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v4.widget.SwipeRefreshLayout
 import android.util.Log
+import android.widget.AbsListView
 import android.widget.GridView
 import butterknife.BindView
 import butterknife.ButterKnife
@@ -23,7 +24,16 @@ import java.util.concurrent.TimeUnit
 
 class FeedActivity : AppCompatActivity() {
 
-    private val TAG = "FeedActivity"
+    companion object {
+        private val TAG = "FeedActivity"
+        private val ITEMS_PER_PAGE = 20
+        //cause there is no such field as "total" in the response!!!!
+        private var MAX_ITEM_COUNT = 25*ITEMS_PER_PAGE
+    }
+
+    private var currentOffset: Int = 0
+
+
     @BindView(R.id.grid_images) lateinit var imagesGrid: GridView
     @BindView(R.id.swipeRefreshFeed) lateinit var swipeRefreshLayout: SwipeRefreshLayout
 
@@ -38,12 +48,28 @@ class FeedActivity : AppCompatActivity() {
         imagesGrid.adapter = adapter
 
         showProgressBar()
-        loadImages()
+        loadImages(currentOffset)
 
         swipeRefreshLayout.setOnRefreshListener {
             adapter.clearImages()
-            loadImages()
+            currentOffset = 0
+            loadImages(currentOffset)
         }
+
+        imagesGrid.setOnScrollListener(object: AbsListView.OnScrollListener {
+            override fun onScroll(view: AbsListView?, firstVisibleItem: Int, visibleItemCount: Int, totalItemCount: Int) {
+                Log.d(TAG, "onScroll $firstVisibleItem")
+
+                if (totalItemCount - visibleItemCount <= firstVisibleItem && adapter.count + ITEMS_PER_PAGE <= MAX_ITEM_COUNT) {
+                    //TODO: Add footer or some progress view to show that items are loading
+                    showProgressBar()
+                    currentOffset += ITEMS_PER_PAGE
+                    loadImages(currentOffset)
+                    Log.d(TAG, firstVisibleItem.toString())
+                }
+            }
+            override fun onScrollStateChanged(view: AbsListView?, state: Int) {}
+        })
 
     }
 
@@ -57,15 +83,17 @@ class FeedActivity : AppCompatActivity() {
 
 
     //todo: loadImages(offset: Int)
-    fun loadImages() {
+    fun loadImages(offset: Int) {
         val retrofit: YandexDiskApi = getRetrofit().create(YandexDiskApi::class.java)
-        retrofit.getImages(40, "image")
+        retrofit.getImages(ITEMS_PER_PAGE, offset)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe( {
                     imagesResponse: ImagesResponse -> Log.d(TAG, "got images!!: " +
                         "${imagesResponse.items.map { image -> image.name }}")
 
+                    Log.d(TAG, "total items: ${imagesResponse.total}")
+                    //MAX_ITEM_COUNT = imagesResponse.total.toInt() -- no "total" field in return :(((
                     val images = imagesResponse.items
                     hideProgressBar()
                     adapter.addImages(images)

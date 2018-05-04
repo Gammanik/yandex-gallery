@@ -9,6 +9,7 @@ import com.bumptech.glide.Glide
 import ya.co.yandex_gallery.model.Image
 import ya.co.yandex_gallery.util.AppConstants
 import android.view.LayoutInflater
+import com.bumptech.glide.request.RequestOptions
 
 
 class ImageFeedAdapter (private val mContext: Context) : BaseAdapter() {
@@ -55,9 +56,17 @@ class ImageFeedAdapter (private val mContext: Context) : BaseAdapter() {
             holder = convertView.tag as ViewHolder
         }
 
+        val currentPicDownloadUrl = if(imagesList[position].preview != null) {
+            imagesList[position].preview!!
+        } else {
+            imagesList[position].file
+        }
+
+
+
         Glide.with(mContext)
-                .load(AppConstants.getUrlWithHeaders(imagesList[position].preview))
-                //todo:  .placeholder(imagesList[position].name)
+                .load(AppConstants.getUrlWithHeaders(currentPicDownloadUrl))
+                .apply(RequestOptions().centerCrop())
                 .into(holder.imageView!!)
 
         return returnedConvertView
