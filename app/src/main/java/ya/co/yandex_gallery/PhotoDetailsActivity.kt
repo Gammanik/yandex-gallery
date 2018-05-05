@@ -65,7 +65,9 @@ class PhotoDetailsActivity : AppCompatActivity() {
                 .load(AppConstants.getUrlWithHeaders(imgUrl))
                 .listener(object : RequestListener<Drawable> {
                     override fun onLoadFailed(e: GlideException?, model: Any?, target: Target<Drawable>?, isFirstResource: Boolean): Boolean {
-                        Toast.makeText(applicationContext, "Image loading failed", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(applicationContext, "Image loading failed", Toast.LENGTH_LONG).show()
+                        show()
+                        pulse_view.finishPulse()
                         return false
                     }
 
