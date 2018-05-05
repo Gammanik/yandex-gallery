@@ -51,43 +51,45 @@ class FeedActivity : AppCompatActivity() {
         setContentView(R.layout.activity_feed)
         ButterKnife.bind(this)
 
-        //if user is lon logged in - he cannot see this page
-        if(AppConstants.getAccessToken() == "")
-            redirectToLoginPage()
-
         adapter = ImageFeedAdapter(this)
         imagesGrid.adapter = adapter
 
-        showProgressBar()
-        loadImages(currentOffset)
 
-        swipeRefreshLayout.setOnRefreshListener {
-            adapter.clearImages()
-            currentOffset = 0
+        //if user is lon logged in - he cannot see this page
+        if(AppConstants.getAccessToken() == "") {
+            redirectToLoginPage()
+        } else {
+            showProgressBar()
             loadImages(currentOffset)
-        }
 
-        imagesGrid.setOnScrollListener(object: AbsListView.OnScrollListener {
-            override fun onScroll(view: AbsListView?, firstVisibleItem: Int, visibleItemCount: Int, totalItemCount: Int) {
-                if (totalItemCount - visibleItemCount <= firstVisibleItem
-                        && adapter.count + ITEMS_PER_PAGE <= MAX_ITEM_COUNT && !isLoading) {
-                    showProgressBar()
-                    currentOffset += ITEMS_PER_PAGE
-                    loadImages(currentOffset)
-                    Log.d(TAG, firstVisibleItem.toString())
-                }
+            swipeRefreshLayout.setOnRefreshListener {
+                adapter.clearImages()
+                currentOffset = 0
+                loadImages(currentOffset)
             }
-            override fun onScrollStateChanged(view: AbsListView?, state: Int) {}
-        })
 
-        //this code is better to be here than inside the adapter I guess
-        imagesGrid.onItemClickListener = AdapterView.OnItemClickListener { _, _, itemPosition, _ ->
-            val image: Image = adapter.getItem(itemPosition)
+            imagesGrid.setOnScrollListener(object: AbsListView.OnScrollListener {
+                override fun onScroll(view: AbsListView?, firstVisibleItem: Int, visibleItemCount: Int, totalItemCount: Int) {
+                    if (totalItemCount - visibleItemCount <= firstVisibleItem
+                            && adapter.count + ITEMS_PER_PAGE <= MAX_ITEM_COUNT && !isLoading) {
+                        showProgressBar()
+                        currentOffset += ITEMS_PER_PAGE
+                        loadImages(currentOffset)
+                        Log.d(TAG, firstVisibleItem.toString())
+                    }
+                }
+                override fun onScrollStateChanged(view: AbsListView?, state: Int) {}
+            })
 
-            val intent = Intent(MyApplication.appContext, PhotoDetailsActivity::class.java)
-            intent.putExtra(AppConstants.KEY_IMAGE_URL, image.file)
-            intent.putExtra(AppConstants.KEY_IMAGE_NAME, image.name)
-            MyApplication.appContext?.startActivity(intent)
+            //this code is better to be here than inside the adapter I guess
+            imagesGrid.onItemClickListener = AdapterView.OnItemClickListener { _, _, itemPosition, _ ->
+                val image: Image = adapter.getItem(itemPosition)
+
+                val intent = Intent(MyApplication.appContext, PhotoDetailsActivity::class.java)
+                intent.putExtra(AppConstants.KEY_IMAGE_URL, image.file)
+                intent.putExtra(AppConstants.KEY_IMAGE_NAME, image.name)
+                MyApplication.appContext?.startActivity(intent)
+            }
         }
     }
 
