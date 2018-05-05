@@ -54,7 +54,7 @@ class PhotoDetailsActivity : AppCompatActivity() {
         pulse_view.startPulse()
 
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.setBackgroundDrawable(ColorDrawable(ContextCompat.getColor(applicationContext, R.color.colorBlack)))
+        supportActionBar?.setBackgroundDrawable(ColorDrawable(ContextCompat.getColor(applicationContext, R.color.colorPrimary)))
         supportActionBar?.title = intent.extras.getString(AppConstants.KEY_IMAGE_NAME)
 
         mVisible = true

@@ -23,7 +23,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:pv_alpha="70"
-        app:pv_color="@color/colorBlack"
+        app:pv_color="@color/colorPrimary"
         app:pv_icon="@drawable/yandex_logo"
         app:pv_icon_height="70dp"
         app:pv_icon_width="70dp"
