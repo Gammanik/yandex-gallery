@@ -54,6 +54,9 @@ class LoginActivity : AppCompatActivity() {
                 Log.d(TAG, "access_token: $accessToken")
                 saveToken(accessToken)
 
+                val intent = Intent(this, FeedActivity::class.java)
+                this.startActivity(intent)
+
             } else {
                 Toast.makeText(this, "Registration token not found!", LENGTH_SHORT).show()
             }

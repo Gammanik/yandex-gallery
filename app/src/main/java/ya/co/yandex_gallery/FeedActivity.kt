@@ -3,11 +3,15 @@ package ya.co.yandex_gallery
 import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.preference.PreferenceManager
 import android.support.v4.widget.SwipeRefreshLayout
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.AbsListView
 import android.widget.AdapterView
 import android.widget.GridView
+import android.widget.Toast
 import butterknife.BindView
 import butterknife.ButterKnife
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -47,6 +51,10 @@ class FeedActivity : AppCompatActivity() {
         setContentView(R.layout.activity_feed)
         ButterKnife.bind(this)
 
+        //if user is lon logged in - he cannot see this page
+        if(AppConstants.getAccessToken() == "")
+            redirectToLoginPage()
+
         adapter = ImageFeedAdapter(this)
         imagesGrid.adapter = adapter
 
@@ -73,8 +81,6 @@ class FeedActivity : AppCompatActivity() {
 
         //this code is better to be here than inside the adapter I guess
         imagesGrid.onItemClickListener = AdapterView.OnItemClickListener { _, _, itemPosition, _ ->
-            Log.d(TAG, "gridClick ${adapter.getItem(itemPosition)}")
-
             val image: Image = adapter.getItem(itemPosition)
 
             val intent = Intent(MyApplication.appContext, PhotoDetailsActivity::class.java)
@@ -82,6 +88,10 @@ class FeedActivity : AppCompatActivity() {
             intent.putExtra(AppConstants.KEY_IMAGE_NAME, image.name)
             MyApplication.appContext?.startActivity(intent)
         }
+    }
+
+    private fun redirectToLoginPage() {
+        startActivity(Intent(this, LoginActivity::class.java))
     }
 
     private fun showProgressBar() {
@@ -93,7 +103,7 @@ class FeedActivity : AppCompatActivity() {
     }
 
 
-    fun loadImages(offset: Int) {
+    fun loadImages(offset: Int) { //todo: put in ImagesRepository class
         val retrofit: YandexDiskApi = getRetrofit().create(YandexDiskApi::class.java)
         retrofit.getImages(ITEMS_PER_PAGE, offset)
                 .subscribeOn(Schedulers.io())
@@ -113,14 +123,34 @@ class FeedActivity : AppCompatActivity() {
                 }, {
                     throwable: Throwable? ->
                     throwable?.printStackTrace()
-
-                    //todo: go to authorization activity in case we're not authorized
-//                    rxjava throwable get code
-//                    if(throwable.code() as HttpException == 401) {
-//                    val intent = Intent(this, LoginActivity::class.java)
-//                    startActivity(intent)
-//                }
+                    Toast.makeText(this, "Error loading photos ${throwable.toString()}", Toast.LENGTH_LONG)
+                            .show()
                 })
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        if(item?.itemId == R.id.action_logout) {
+            logoutUser()
+            return true
+        }
+
+        return super.onOptionsItemSelected(item)
+    }
+
+    private fun logoutUser() {
+        //pretend we've never been logged in
+        val editor = PreferenceManager.getDefaultSharedPreferences(this).edit()
+        editor.remove(AppConstants.KEY_TOKEN)
+        editor.apply()
+        redirectToLoginPage()
+
+        AppConstants.clearAccessToken()
+        //todo: it would be good to clear the token cookie in the webView also
     }
 
 
