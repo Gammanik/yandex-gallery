@@ -2,8 +2,21 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="#b0605c5c"
     tools:context="ya.co.yandex_gallery.PhotoDetailsActivity">
+
+    <com.gigamole.library.PulseView
+        android:id="@+id/pulse_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:pv_icon="@drawable/ic_wallpaper_black_24dp"
+        app:pv_color="@color/colorBlack"
+        app:pv_alpha="70"
+        app:pv_icon_height="70dp"
+        app:pv_icon_width="70dp"
+        app:pv_spawn_period="300"
+        app:pv_interpolator="@android:anim/linear_interpolator"/>
 
     <com.github.chrisbanes.photoview.PhotoView
         android:id="@+id/photo_view"

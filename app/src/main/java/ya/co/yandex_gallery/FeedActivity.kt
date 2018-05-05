@@ -72,7 +72,7 @@ class FeedActivity : AppCompatActivity() {
         })
 
         //this code is better to be here than inside the adapter I guess
-        imagesGrid.onItemClickListener = AdapterView.OnItemClickListener { parent, view, itemPosition, id ->
+        imagesGrid.onItemClickListener = AdapterView.OnItemClickListener { _, _, itemPosition, _ ->
             Log.d(TAG, "gridClick ${adapter.getItem(itemPosition)}")
 
             val image: Image = adapter.getItem(itemPosition)

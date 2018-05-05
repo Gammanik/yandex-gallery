@@ -1,13 +1,19 @@
 package ya.co.yandex_gallery
 
 import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.Drawable
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.support.v4.content.ContextCompat
 import android.view.MenuItem
 import android.view.View
+import android.widget.Toast
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.request.RequestListener
+import com.bumptech.glide.request.target.Target
 import kotlinx.android.synthetic.main.activity_photo_details.*
 import ya.co.yandex_gallery.util.AppConstants
 
@@ -43,8 +49,10 @@ class PhotoDetailsActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         setContentView(R.layout.activity_photo_details)
+
+        pulse_view.startPulse()
+
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setBackgroundDrawable(ColorDrawable(ContextCompat.getColor(applicationContext, R.color.colorBlack)))
         supportActionBar?.title = intent.extras.getString(AppConstants.KEY_IMAGE_NAME)
@@ -55,6 +63,18 @@ class PhotoDetailsActivity : AppCompatActivity() {
 
         Glide.with(this.applicationContext)
                 .load(AppConstants.getUrlWithHeaders(imgUrl))
+                .listener(object : RequestListener<Drawable> {
+                    override fun onLoadFailed(e: GlideException?, model: Any?, target: Target<Drawable>?, isFirstResource: Boolean): Boolean {
+                        Toast.makeText(applicationContext, "Image loading failed", Toast.LENGTH_SHORT).show()
+                        return false
+                    }
+
+                    override fun onResourceReady(resource: Drawable?, model: Any?, target: Target<Drawable>?, dataSource: DataSource?, isFirstResource: Boolean): Boolean {
+                        pulse_view.finishPulse()
+                        return false
+                    }
+
+                })
                 .into(photo_view)
 
         // Set up the user interaction to manually show or hide the system UI.
