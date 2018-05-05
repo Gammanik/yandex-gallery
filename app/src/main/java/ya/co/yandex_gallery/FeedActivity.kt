@@ -33,13 +33,13 @@ class FeedActivity : AppCompatActivity() {
 
     companion object {
         private val TAG = "FeedActivity"
-        private val ITEMS_PER_PAGE = 20
+        private val ITEMS_PER_PAGE = 25
         //cause there is no such field as "total" in the response!!!!
         private var MAX_ITEM_COUNT = 25*ITEMS_PER_PAGE
     }
 
     private var currentOffset: Int = 0
-
+    private var isLoading = false
 
     @BindView(R.id.grid_images) lateinit var imagesGrid: GridView
     @BindView(R.id.swipeRefreshFeed) lateinit var swipeRefreshLayout: SwipeRefreshLayout
@@ -69,7 +69,8 @@ class FeedActivity : AppCompatActivity() {
 
         imagesGrid.setOnScrollListener(object: AbsListView.OnScrollListener {
             override fun onScroll(view: AbsListView?, firstVisibleItem: Int, visibleItemCount: Int, totalItemCount: Int) {
-                if (totalItemCount - visibleItemCount <= firstVisibleItem && adapter.count + ITEMS_PER_PAGE <= MAX_ITEM_COUNT) {
+                if (totalItemCount - visibleItemCount <= firstVisibleItem
+                        && adapter.count + ITEMS_PER_PAGE <= MAX_ITEM_COUNT && !isLoading) {
                     showProgressBar()
                     currentOffset += ITEMS_PER_PAGE
                     loadImages(currentOffset)
@@ -104,6 +105,7 @@ class FeedActivity : AppCompatActivity() {
 
 
     fun loadImages(offset: Int) { //todo: put in ImagesRepository class
+        isLoading = true
         val retrofit: YandexDiskApi = getRetrofit().create(YandexDiskApi::class.java)
         retrofit.getImages(ITEMS_PER_PAGE, offset)
                 .subscribeOn(Schedulers.io())
@@ -111,6 +113,7 @@ class FeedActivity : AppCompatActivity() {
                 .subscribe( {
                     imagesResponse: ImagesResponse -> Log.d(TAG, "got images!!: " +
                         "${imagesResponse.items.map { image -> image.name }}")
+
                     //because there is no "total" in the images response I have to do such a @hack
                     if(imagesResponse.items.size < ITEMS_PER_PAGE) {
                         //to prevent sending useless requests when the end of the list is reached
@@ -120,6 +123,7 @@ class FeedActivity : AppCompatActivity() {
                     val images = imagesResponse.items
                     hideProgressBar()
                     adapter.addImages(images)
+                    isLoading = false
                 }, {
                     throwable: Throwable? ->
                     throwable?.printStackTrace()
