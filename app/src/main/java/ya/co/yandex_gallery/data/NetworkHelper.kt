@@ -22,7 +22,6 @@ class NetworkHelper {
         }
 
         fun getOkHttpClient(): OkHttpClient {
-            //todo: add offlineCacheControlInterceptor() &&  .cache(httpCache)
             return OkHttpClient.Builder()
                     .connectTimeout(10, TimeUnit.SECONDS)
                     .readTimeout(10, TimeUnit.SECONDS)
@@ -41,7 +40,6 @@ class NetworkHelper {
                         .build()
                 return chain.proceed(request)
             }
-
         }
     }
 }

@@ -6,6 +6,7 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.preference.PreferenceManager
 import android.util.Log
+import android.widget.Button
 import android.widget.Toast
 import android.widget.Toast.LENGTH_SHORT
 import butterknife.BindView
@@ -20,11 +21,20 @@ class LoginActivity : AppCompatActivity() {
     val TAG = "LoginActivity"
 
     @BindView(R.id.yandex_login_image) lateinit var loginImagePulseView: PulseView
+    @BindView(R.id.button_without_reg) lateinit var button: Button
 
     @OnClick(R.id.yandex_login_image)
-    fun loginClick() { //todo: use active dialog onCreate instead
-        Log.d("Login", "clicked!")
+    fun loginClick() {
         startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(AppConstants.AUTH_URL)))
+    }
+
+    @OnClick(R.id.button_without_reg)
+    fun anonymousClick() {
+        Log.d("Login", "anonymous clicked!")
+        val intent = Intent(this, FeedActivity::class.java)
+        intent.putExtra(AppConstants.KEY_IS_CONTINUE_ANON, true)
+        startActivity(intent)
+//            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(AppConstants.AUTH_URL)))
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

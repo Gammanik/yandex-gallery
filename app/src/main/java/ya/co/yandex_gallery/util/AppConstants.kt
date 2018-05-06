@@ -30,6 +30,8 @@ class AppConstants {
         @JvmStatic //intent.putExtra
         val KEY_IMAGE_NAME = "IMAGE_DOWNLOAD_NAME_KEY"
 
+        @JvmStatic
+        val KEY_IS_CONTINUE_ANON = "USER_WITHOUT_REGISTRATION_KEY"
 
         @JvmStatic
         private var ACCESS_TOKEN = ""
