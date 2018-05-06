@@ -18,8 +18,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import ya.co.yandex_gallery.util.AppConstants
 import ya.co.yandex_gallery.adapters.ImageFeedAdapter
-import ya.co.yandex_gallery.data.NetworkHelper
-import ya.co.yandex_gallery.data.YandexDiskApi
+import ya.co.yandex_gallery.data.YandexDiskClient
 import ya.co.yandex_gallery.model.Image
 import ya.co.yandex_gallery.model.ImagesResponse
 
@@ -35,6 +34,7 @@ class FeedActivity : AppCompatActivity() {
 
     private var currentOffset: Int = 0
     private var isLoading = false
+    private var isContinueAnonimous = false
 
     @BindView(R.id.grid_images) lateinit var imagesGrid: GridView
     @BindView(R.id.swipeRefreshFeed) lateinit var swipeRefreshLayout: SwipeRefreshLayout
@@ -50,8 +50,11 @@ class FeedActivity : AppCompatActivity() {
         imagesGrid.adapter = adapter
 
 
+        isContinueAnonimous = intent.getBooleanExtra(AppConstants.KEY_IS_CONTINUE_ANON, false)
+
+
         //if user is lon logged in - he cannot see this page
-        if(AppConstants.getAccessToken() == "") {
+        if(AppConstants.getAccessToken() == "" && !isContinueAnonimous) {
             redirectToLoginPage()
         } else {
             showProgressBar()
@@ -102,25 +105,34 @@ class FeedActivity : AppCompatActivity() {
 
 
     fun loadImages(offset: Int) { //todo: put in ImagesRepository class
+        //but to Implement it in repository class I have to avoid all side effects somehow
         isLoading = true //exclude: side effect ((
-        val retrofit: YandexDiskApi = NetworkHelper.getRetrofit().create(YandexDiskApi::class.java)
-        retrofit.getImages(ITEMS_PER_PAGE, offset)
+
+        YandexDiskClient
+                .loadImages(isContinueAnonimous, ITEMS_PER_PAGE, offset)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe( {
-                    imagesResponse: ImagesResponse -> Log.d(TAG, "got images!!: " +
-                        "${imagesResponse.items.map { image -> image.name }}")
+                    imagesResponse: ImagesResponse -> Log.e(TAG, "got images!!: " +
+                        "${imagesResponse}")
 
-                    //because there is no "total" in the images response I have to do such a @hack
-                    if(imagesResponse.items.size < ITEMS_PER_PAGE) {
-                        //to prevent sending useless requests when the end of the list is reached
-                        MAX_ITEM_COUNT = adapter.count
-
+                    val images = if(isContinueAnonimous) {
+                        imagesResponse._embedded!!.items
+                    } else {
+                        imagesResponse.items
                     }
-                    val images = imagesResponse.items
+
                     hideProgressBar()
                     adapter.addImages(images)
                     isLoading = false
+
+                    //because there is no "total" in the images response I have to do such a @hack
+                    if(images.size < ITEMS_PER_PAGE) {
+                        //to prevent sending useless requests when the end of the list is reached
+                        MAX_ITEM_COUNT = adapter.count
+                    }
+
+
                 }, {
                     throwable: Throwable? ->
                     throwable?.printStackTrace()
@@ -130,8 +142,11 @@ class FeedActivity : AppCompatActivity() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.menu_main, menu)
-        return super.onCreateOptionsMenu(menu)
+        if(!isContinueAnonimous) { //able to logout only if logged in
+            menuInflater.inflate(R.menu.menu_main, menu)
+            return super.onCreateOptionsMenu(menu)
+        }
+        return false
     }
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
