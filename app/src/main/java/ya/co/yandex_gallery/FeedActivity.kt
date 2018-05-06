@@ -16,17 +16,12 @@ import butterknife.BindView
 import butterknife.ButterKnife
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import okhttp3.Interceptor
-import okhttp3.OkHttpClient
-import okhttp3.Response
 import ya.co.yandex_gallery.util.AppConstants
-import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.Retrofit
-import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
+import ya.co.yandex_gallery.adapters.ImageFeedAdapter
+import ya.co.yandex_gallery.data.NetworkHelper
 import ya.co.yandex_gallery.data.YandexDiskApi
 import ya.co.yandex_gallery.model.Image
 import ya.co.yandex_gallery.model.ImagesResponse
-import java.util.concurrent.TimeUnit
 
 
 class FeedActivity : AppCompatActivity() {
@@ -107,8 +102,8 @@ class FeedActivity : AppCompatActivity() {
 
 
     fun loadImages(offset: Int) { //todo: put in ImagesRepository class
-        isLoading = true
-        val retrofit: YandexDiskApi = getRetrofit().create(YandexDiskApi::class.java)
+        isLoading = true //exclude: side effect ((
+        val retrofit: YandexDiskApi = NetworkHelper.getRetrofit().create(YandexDiskApi::class.java)
         retrofit.getImages(ITEMS_PER_PAGE, offset)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -148,8 +143,7 @@ class FeedActivity : AppCompatActivity() {
         return super.onOptionsItemSelected(item)
     }
 
-    private fun logoutUser() {
-        //pretend we've never been logged in
+    private fun logoutUser() { //td: create UserManager class?
         val editor = PreferenceManager.getDefaultSharedPreferences(this).edit()
         editor.remove(AppConstants.KEY_TOKEN)
         editor.apply()
@@ -160,36 +154,5 @@ class FeedActivity : AppCompatActivity() {
     }
 
 
-    //////////////////////todo: make it in Network class? provide as a dependency?
-    fun getRetrofit(): Retrofit {
-        return Retrofit.Builder()
-                .baseUrl(AppConstants.API_BASE_URL)
-                .addConverterFactory(GsonConverterFactory.create())
-                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-                .client(getOkHttpClient())
-                .build()
-    }
 
-    fun getOkHttpClient(): OkHttpClient {
-        //todo: add offlineCacheControlInterceptor() &&  .cache(httpCache)
-        return OkHttpClient.Builder()
-                .connectTimeout(10, TimeUnit.SECONDS)
-                .readTimeout(10, TimeUnit.SECONDS)
-                .addInterceptor(YandexApiInterceptor())
-                .build()
-    }
-
-    private class YandexApiInterceptor: Interceptor {
-        override fun intercept(chain: Interceptor.Chain?): Response {
-            val originalRequest = chain!!.request()
-            val request = originalRequest
-                    .newBuilder()
-                    .addHeader("Authorization", "OAuth " + AppConstants.getAccessToken())
-                    .addHeader("Accept", "application/json")
-                    .addHeader("Content-Type", "application/json")
-                    .build()
-            return chain.proceed(request)
-        }
-
-    }
 }

@@ -22,14 +22,9 @@ import ya.co.yandex_gallery.util.AppConstants
  * status bar and navigation/system bar) with user interaction.
  */
 class PhotoDetailsActivity : AppCompatActivity() {
-    //todo: add progressBar/progressDialog
     private val mHideHandler = Handler()
     private val mHidePart2Runnable = Runnable {
         // Delayed removal of status and navigation bar
-
-        // Note that some of these constants are new as of API 16 (Jelly Bean)
-        // and API 19 (KitKat). It is safe to use them, as they are inlined
-        // at compile-time and do nothing on earlier devices.
 
         photo_view.systemUiVisibility =
                 View.SYSTEM_UI_FLAG_LOW_PROFILE or
@@ -60,7 +55,13 @@ class PhotoDetailsActivity : AppCompatActivity() {
         mVisible = true
 
         val imgUrl: String = intent.extras.getString(AppConstants.KEY_IMAGE_URL)
+        loadImage(imgUrl)
 
+        // Set up the user interaction to manually show or hide the system UI.
+        photo_view.setOnClickListener { toggle() }
+    }
+
+    private fun loadImage(imgUrl: String) {
         Glide.with(this.applicationContext)
                 .load(AppConstants.getUrlWithHeaders(imgUrl))
                 .listener(object : RequestListener<Drawable> {
@@ -78,9 +79,6 @@ class PhotoDetailsActivity : AppCompatActivity() {
 
                 })
                 .into(photo_view)
-
-        // Set up the user interaction to manually show or hide the system UI.
-        photo_view.setOnClickListener { toggle() }
     }
 
     override fun onPostCreate(savedInstanceState: Bundle?) {

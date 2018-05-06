@@ -1,4 +1,4 @@
-package ya.co.yandex_gallery
+package ya.co.yandex_gallery.adapters
 
 import android.content.Context
 import android.view.View
@@ -10,6 +10,7 @@ import ya.co.yandex_gallery.model.Image
 import ya.co.yandex_gallery.util.AppConstants
 import android.view.LayoutInflater
 import com.bumptech.glide.request.RequestOptions
+import ya.co.yandex_gallery.R
 
 
 class ImageFeedAdapter (private val mContext: Context) : BaseAdapter() {
