@@ -6,12 +6,12 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.preference.PreferenceManager
 import android.util.Log
-import android.widget.Button
 import android.widget.Toast
 import android.widget.Toast.LENGTH_SHORT
 import butterknife.BindView
 import butterknife.ButterKnife
 import butterknife.OnClick
+import com.gigamole.library.PulseView
 import ya.co.yandex_gallery.util.AppConstants
 import java.util.regex.Pattern
 
@@ -19,9 +19,9 @@ class LoginActivity : AppCompatActivity() {
 
     val TAG = "LoginActivity"
 
-    @BindView(R.id.button_login) lateinit var loginButton: Button
+    @BindView(R.id.yandex_login_image) lateinit var loginImagePulseView: PulseView
 
-    @OnClick(R.id.button_login)
+    @OnClick(R.id.yandex_login_image)
     fun loginClick() { //todo: use active dialog onCreate instead
         Log.d("Login", "clicked!")
         startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(AppConstants.AUTH_URL)))
@@ -31,6 +31,8 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
         ButterKnife.bind(this)
+
+        loginImagePulseView.startPulse()
     }
 
     override fun onResume() {
@@ -39,12 +41,12 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun onLogin() {
-        val uri = intent.data
+        val uri = intent?.data
         intent = null
 
         if (uri != null && uri.toString().startsWith(AppConstants.REDIRECT_URL)) {
 
-            Log.d(TAG, "uri: $uri")
+            loginImagePulseView.finishPulse()
             val pattern = Pattern.compile("access_token=(.*?)(&|\$)")
             val matcher = pattern.matcher(uri.toString())
 
@@ -53,6 +55,9 @@ class LoginActivity : AppCompatActivity() {
                 Toast.makeText(this, "Welcome back, username!", LENGTH_SHORT).show()
                 Log.d(TAG, "access_token: $accessToken")
                 saveToken(accessToken)
+
+                val intent = Intent(this, FeedActivity::class.java)
+                this.startActivity(intent)
 
             } else {
                 Toast.makeText(this, "Registration token not found!", LENGTH_SHORT).show()

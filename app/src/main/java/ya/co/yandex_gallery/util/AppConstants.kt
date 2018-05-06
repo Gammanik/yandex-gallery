@@ -47,6 +47,11 @@ class AppConstants {
         }
 
         @JvmStatic
+        fun clearAccessToken() {
+            ACCESS_TOKEN = ""
+        }
+
+        @JvmStatic
         fun getUrlWithHeaders(url: String): GlideUrl {
             return GlideUrl(url, LazyHeaders.Builder()
                     .addHeader("Authorization", "OAuth ${getAccessToken()}")
