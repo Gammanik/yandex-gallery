@@ -30,7 +30,6 @@ class LoginActivity : AppCompatActivity() {
 
     @OnClick(R.id.button_without_reg)
     fun anonymousClick() {
-        Log.d("Login", "anonymous clicked!")
         val intent = Intent(this, FeedActivity::class.java)
         intent.putExtra(AppConstants.KEY_IS_CONTINUE_ANON, true)
         startActivity(intent)
@@ -63,7 +62,6 @@ class LoginActivity : AppCompatActivity() {
             if(matcher.find()) {
                 val accessToken = matcher.group(1)
                 Toast.makeText(this, "Welcome back, username!", LENGTH_SHORT).show()
-                Log.d(TAG, "access_token: $accessToken")
                 saveToken(accessToken)
 
                 val intent = Intent(this, FeedActivity::class.java)

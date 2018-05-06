@@ -62,6 +62,7 @@ class FeedActivity : AppCompatActivity() {
 
             swipeRefreshLayout.setOnRefreshListener {
                 adapter.clearImages()
+                MAX_ITEM_COUNT = 25* ITEMS_PER_PAGE
                 currentOffset = 0
                 loadImages(currentOffset)
             }
@@ -73,7 +74,6 @@ class FeedActivity : AppCompatActivity() {
                         showProgressBar()
                         currentOffset += ITEMS_PER_PAGE
                         loadImages(currentOffset)
-                        Log.d(TAG, firstVisibleItem.toString())
                     }
                 }
                 override fun onScrollStateChanged(view: AbsListView?, state: Int) {}
@@ -113,14 +113,8 @@ class FeedActivity : AppCompatActivity() {
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe( {
-                    imagesResponse: ImagesResponse -> Log.e(TAG, "got images!!: " +
-                        "${imagesResponse}")
-
-                    val images = if(isContinueAnonimous) {
-                        imagesResponse._embedded!!.items
-                    } else {
-                        imagesResponse.items
-                    }
+                    imagesResponse: ImagesResponse ->
+                    val images = if(isContinueAnonimous) imagesResponse._embedded!!.items else imagesResponse.items
 
                     hideProgressBar()
                     adapter.addImages(images)
@@ -131,8 +125,6 @@ class FeedActivity : AppCompatActivity() {
                         //to prevent sending useless requests when the end of the list is reached
                         MAX_ITEM_COUNT = adapter.count
                     }
-
-
                 }, {
                     throwable: Throwable? ->
                     throwable?.printStackTrace()

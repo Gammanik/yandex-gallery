@@ -13,7 +13,7 @@ import ya.co.yandex_gallery.model.ImagesResponse
  */
 interface YandexDiskPublicApi{
 
-    @GET("public/resources?")
+    @GET("public/resources")
     fun getImages(@Query("limit") limit: Int,
                   @Query("offset") offset: Int,
                   @Query("public_key") key: String = "https%3A%2F%2Fyadi.sk%2Fd%2F2auBunz33VQqVP"): Single<ImagesResponse>
